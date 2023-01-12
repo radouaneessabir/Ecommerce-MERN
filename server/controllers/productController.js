@@ -3,25 +3,6 @@ const mongoose = require("mongoose");
 const Product = require('../models/productModel')
 
 
-// Create Product
-exports.createProduct = async (req, res, next) => {
-    const data = req.body;
-    const newProduct = new Product(data);
-
-    try {
-        await newProduct.save()
-        .then(() => res.status(201).json({
-            success: true,
-            newProduct
-        }))
-        .catch((err) => res.json({error : err}));
-        
-
-    } catch (error) {
-        res.status(409).json({message: error.message});
-    }
-}
-
 
 // Get All Products
 exports.getAllProducts = async (req, res) => {
@@ -40,6 +21,24 @@ exports.getAllProducts = async (req, res) => {
 }
 
 
+// Create Product
+exports.createProduct = async (req, res, next) => {
+    const data = req.body;
+    const newProduct = new Product(data);
+
+    try {
+        await newProduct.save()
+        .then(() => res.status(201).json({
+            success: true,
+            newProduct
+        }))
+        .catch((err) => res.json({error : err}));
+    } catch (error) {
+        res.status(409).json({message: error.message});
+    }
+}
+
+
 // Update Product
 exports.updateProduct = async (req, res) => {
     const id = req.params.id
@@ -47,9 +46,12 @@ exports.updateProduct = async (req, res) => {
 
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No Product with id: ${id}`);
 
-    const product = await Product.findByIdAndUpdate(id, data, {new: true});
-
-    res.status(200).json(product);
+    try {
+         const product = await Product.findByIdAndUpdate(id, data, {new: true});
+        res.status(200).json(product);
+    } catch (error) {
+        res.status(409).json({message: error.message});
+    }
 }
 
 
@@ -59,7 +61,14 @@ exports.deleteProduct = async (req, res) => {
 
     if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No Product with id: ${id}`);
 
-    await Product.findByIdAndRemove(id);
-    
-    res.json({message: 'Product deleted successfuly!'});
+    try {
+        await  Product.findByIdAndRemove(id)
+        .then(() => res.status(200).json({
+            success: true,
+            message: 'Product deleted successfuly!'
+        }))
+        .catch((err) => res.json({error : err}));
+    } catch (error) {
+        res.status(409).json({message: error.message});
+    }
 }

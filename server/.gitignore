@@ -4,4 +4,4 @@
 
 # config
 /config/.env
-/config/database
+/config/database.js
