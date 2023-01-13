@@ -1,12 +1,11 @@
 
 const mongoose = require("mongoose");
-const Product = require('../models/productModel')
-
+const Product = require('../models/productModel');
+const ErrorHandler = require("../utils/errorHandler");
 
 
 // Get All Products
 exports.getAllProducts = async (req, res) => {
-
     try {
         const products = await Product.find();
 
@@ -22,8 +21,12 @@ exports.getAllProducts = async (req, res) => {
 
 
 // Get Product Details
-exports.getProductDetails = async (req, res) => {
+exports.getProductDetails = async (req, res, next) => {
     const id = req.params.id;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(new ErrorHandler(`No Product with id: ${id}`, 404))
+    }
 
     try {
         const product = await Product.findById(id)
@@ -38,7 +41,7 @@ exports.getProductDetails = async (req, res) => {
 
 
 // Create Product
-exports.createProduct = async (req, res, next) => {
+exports.createProduct = async (req, res) => {
     const data = req.body;
     const newProduct = new Product(data);
 
@@ -56,11 +59,14 @@ exports.createProduct = async (req, res, next) => {
 
 
 // Update Product
-exports.updateProduct = async (req, res) => {
+exports.updateProduct = async (req, res, next) => {
     const id = req.params.id
     const data = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No Product with id: ${id}`);
+    // if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No Product with id: ${id}`);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(new ErrorHandler(`No Product with id: ${id}`, 404))
+    }
 
     try {
          const product = await Product.findByIdAndUpdate(id, data, {new: true});
@@ -72,10 +78,13 @@ exports.updateProduct = async (req, res) => {
 
 
 // Delete Product
-exports.deleteProduct = async (req, res) => {
+exports.deleteProduct = async (req, res, next) => {
     const id = req.params.id
 
-    if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No Product with id: ${id}`);
+    // if (!mongoose.Types.ObjectId.isValid(id)) return res.status(404).send(`No Product with id: ${id}`);
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return next(new ErrorHandler(`No Product with id: ${id}`, 404))
+    }
 
     try {
         await  Product.findByIdAndRemove(id)

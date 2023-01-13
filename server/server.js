@@ -1,27 +1,29 @@
 const app =  require('./app')
-const dotenv = require('dotenv')
+require('./config/database');
+
 
 // Config
-dotenv.config({path:"./config/.env"})
 const PORT = process.env.PORT || 5000;
 
-// const connectDatabase = require('./config/database')
-// connectDatabase()
-const mongoose =  require('mongoose')
-mongoose.set('strictQuery',false);
-mongoose.connect(process.env.DATABASE, {useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => app.listen(PORT, () => console.log(`Server is runing on port: ${PORT}`)))
-    .catch((err) => console.log("error", err));
-
-// mongoose.connection.on('error', (err) => {
-//     console.log('Mongoose Connection Eroor: ', err.message)
-// })
-
-// mongoose.connection.once('open', () => {
-//     console.log('MongoDB Connected')
-// })
+// const mongoose =  require('mongoose')
+// mongoose.set('strictQuery',false);
+// mongoose.connect(process.env.DATABASE, {useNewUrlParser: true, useUnifiedTopology: true })
+//     .then(() => app.listen(PORT, () => console.log(`Server is runing on port: ${PORT}`)))
+//     .catch((err) => console.log("error", err));
 
 
-// app.listen(PORT, () => {
-//     console.log(`Server is working on http://localhost:${PORT}`)
-// })
+const server = app.listen(PORT, () => {
+    console.log(`Server is runing on port: ${PORT}`)
+})
+
+
+process.on('unhandledRejection', (err) => {
+    console.log(`unhandledRejection ${err.message}`)
+    console.log('Shutting down the server due to Unhandled Promise Rejection')
+    
+    server.close(() => {
+        process.exit(1)
+    })
+})
+
+
