@@ -21,6 +21,22 @@ exports.getAllProducts = async (req, res) => {
 }
 
 
+// Get Product Details
+exports.getProductDetails = async (req, res) => {
+    const id = req.params.id;
+
+    try {
+        const product = await Product.findById(id)
+        res.status(200).json({ 
+            success: true,
+            product 
+        });
+    } catch (error) {
+        res.status(404).json({message: error.message});
+    }
+}
+
+
 // Create Product
 exports.createProduct = async (req, res, next) => {
     const data = req.body;
