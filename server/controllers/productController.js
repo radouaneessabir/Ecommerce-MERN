@@ -6,9 +6,52 @@ const ErrorHandler = require("../utils/errorHandler");
 
 // Get All Products
 exports.getAllProducts = async (req, res) => {
-    try {
-        const products = await Product.find();
+    const searchQuery  = req.query.searchQuery ;
 
+    try {
+        let products;
+        if (searchQuery) {
+            products = await Product.find({
+                name: {
+                    $regex: searchQuery,
+                    $options: "i",
+                }  ,
+            });
+        } else {
+            products = await Product.find();
+        }
+        
+        res.status(200).json({ 
+            success: true,
+            products 
+        });
+        
+    } catch (error) {
+        res.status(404).json({message: error.message});
+    }
+}
+
+
+exports.getAllProducts_V2 = async (req, res) => {
+    const {name, description} = req.query ;
+
+    try {
+        let products;
+
+        if (name || description) {        
+            products = await Product.find( { 
+                $or: [
+                    { name: { $eq: name } },
+                    { description: { $eq: description } },
+                    { $expr: { $eq: [ { name }, { description } ] } }
+                 ]
+            } )
+
+        } else {
+            console.log('pff')
+            products = await Product.find();
+        }
+        
         res.status(200).json({ 
             success: true,
             products 
