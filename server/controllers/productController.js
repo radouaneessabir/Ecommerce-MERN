@@ -1,29 +1,40 @@
 
 const mongoose = require("mongoose");
 const Product = require('../models/productModel');
+const ApiFeatures = require("../utils/apiFeaures");
 const ErrorHandler = require("../utils/errorHandler");
 
 
 // Get All Products
 exports.getAllProducts = async (req, res) => {
-    const searchQuery  = req.query.searchQuery ;
+    // const searchQuery  = req.query.searchQuery ;
 
+    const resultPage = 6
     try {
-        let products;
-        if (searchQuery) {
-            products = await Product.find({
-                name: {
-                    $regex: searchQuery,
-                    $options: "i",
-                }  ,
-            });
-        } else {
-            products = await Product.find();
-        }
+        // let products;
+        // if (searchQuery) {
+        //     products = await Product.find({
+        //         name: {
+        //             $regex: searchQuery,
+        //             $options: "i",
+        //         }  ,
+        //     });
+        // } else {
+        //     products = await Product.find();
+        // }
+
+        const productCount =  await Product.countDocuments();
+
+        const apiFeature = new ApiFeatures(Product.find(), req.query)
+            .search()
+            .filter().pagination(resultPage)
+
+        const products = await apiFeature.query;
         
         res.status(200).json({ 
             success: true,
-            products 
+            products,
+            productCount
         });
         
     } catch (error) {
